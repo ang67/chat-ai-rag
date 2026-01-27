@@ -1,0 +1,259 @@
+{
+  "app.home": {
+    "id": "app.home",
+    "name": "home",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/app.py",
+    "relative_path": "app.py",
+    "depends_on": [],
+    "source_code": "def home():\n    return {'message': 'Backend RAG API'}",
+    "start_line": 18,
+    "end_line": 19,
+    "has_docstring": false,
+    "docstring": "",
+    "parameters": [],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function home",
+    "component_id": "app.home"
+  },
+  "routes.chat.ask": {
+    "id": "routes.chat.ask",
+    "name": "ask",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/routes/chat.py",
+    "relative_path": "routes/chat.py",
+    "depends_on": [
+      "services.rag_service.ask_question"
+    ],
+    "source_code": "def ask():\n    try:\n        data = request.get_json()\n        if  not data or 'question' not in data or not data['question'].strip():\n            return jsonify({'error': 'Question missing'}), 400\n        \n        question = data['question']\n        answer = ask_question(question)\n\n        return jsonify({'answer': answer}), 200\n    except Exception as e:\n        print(f\"Error in /ask: {e}\")\n        return jsonify({'error': str(e)}), 500",
+    "start_line": 6,
+    "end_line": 18,
+    "has_docstring": false,
+    "docstring": "",
+    "parameters": [],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function ask",
+    "component_id": "routes.chat.ask"
+  },
+  "services.rag_service.format_docs": {
+    "id": "services.rag_service.format_docs",
+    "name": "format_docs",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/rag_service.py",
+    "relative_path": "services/rag_service.py",
+    "depends_on": [],
+    "source_code": "def format_docs(docs):\n    \"\"\"Transform a list of documents into text\"\"\"\n    try:\n         return \"\\n\\n\".join(doc.page_content for doc in docs)\n    except Exception as e:\n        print(f\"Error formatting document : {e}\")\n        return \"\"",
+    "start_line": 9,
+    "end_line": 15,
+    "has_docstring": true,
+    "docstring": "Transform a list of documents into text",
+    "parameters": [
+      "docs"
+    ],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function format_docs",
+    "component_id": "services.rag_service.format_docs"
+  },
+  "services.rag_service.get_llm": {
+    "id": "services.rag_service.get_llm",
+    "name": "get_llm",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/rag_service.py",
+    "relative_path": "services/rag_service.py",
+    "depends_on": [],
+    "source_code": "def get_llm():\n    \"\"\"Return Ollama ll instance\"\"\"\n    try:\n        return ChatOllama(\n            model=OLLAMA_MODEL,\n            base_url=OLLAMA_BASE_URL\n        )\n    except Exception as e:\n        print(f\"Error getting llm : {e}\")\n        return None",
+    "start_line": 17,
+    "end_line": 26,
+    "has_docstring": true,
+    "docstring": "Return Ollama ll instance",
+    "parameters": [],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function get_llm",
+    "component_id": "services.rag_service.get_llm"
+  },
+  "services.rag_service.get_prompt_template": {
+    "id": "services.rag_service.get_prompt_template",
+    "name": "get_prompt_template",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/rag_service.py",
+    "relative_path": "services/rag_service.py",
+    "depends_on": [],
+    "source_code": "def get_prompt_template():\n    \"\"\"Return prompt template for the RAG\"\"\"\n    try:\n        return ChatPromptTemplate.from_template(\n            \"\"\"\n            Tu es un assistant qui répond aux questions basé sur contexte fourni.\n\n            Contexte: {context}\n\n            Question: {question}\n\n            Réponds uniquement en te basant sur le contexte fourni. Si tu ne trouves pas la réponse dans le contexte, dis Je ne trouve pas cette information dans les documents fournis\n            \"\"\"\n        )\n    except Exception as e:\n        print(f\"Error getting prompt template : {e}\")\n        return None",
+    "start_line": 29,
+    "end_line": 45,
+    "has_docstring": true,
+    "docstring": "Return prompt template for the RAG",
+    "parameters": [],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function get_prompt_template",
+    "component_id": "services.rag_service.get_prompt_template"
+  },
+  "services.rag_service.get_rag_chain": {
+    "id": "services.rag_service.get_rag_chain",
+    "name": "get_rag_chain",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/rag_service.py",
+    "relative_path": "services/rag_service.py",
+    "depends_on": [
+      "services.vector_store.get_retriever",
+      "services.rag_service.get_prompt_template",
+      "services.rag_service.get_llm"
+    ],
+    "source_code": "def get_rag_chain():\n    \"\"\"Return the completed RAG chain\"\"\"\n    try:\n        retriever = get_retriever()\n        prompt = get_prompt_template()\n        llm = get_llm()\n\n        chain = (\n            {\"context\": retriever | format_docs, \"question\": RunnablePassthrough()}\n            | prompt\n            | llm\n            | StrOutputParser()\n        )\n        return chain\n    except Exception as e:\n        print(f\"Error getting rag chain : {e}\")\n        return None",
+    "start_line": 47,
+    "end_line": 63,
+    "has_docstring": true,
+    "docstring": "Return the completed RAG chain",
+    "parameters": [],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function get_rag_chain",
+    "component_id": "services.rag_service.get_rag_chain"
+  },
+  "services.rag_service.ask_question": {
+    "id": "services.rag_service.ask_question",
+    "name": "ask_question",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/rag_service.py",
+    "relative_path": "services/rag_service.py",
+    "depends_on": [
+      "services.rag_service.get_rag_chain"
+    ],
+    "source_code": "def ask_question(question: str) -> str:\n    \"\"\"Ask a question and return the answer\"\"\"\n    try:\n        rag_chain = get_rag_chain()\n        if rag_chain is None:\n            return \"Erreur lors de l'initialisation de la chain\"\n\n        response = rag_chain.invoke(question)\n        return response\n    except Exception as e:\n        print(f\"Error asking question: {e}\")\n        return f\"Erreur {e}\"",
+    "start_line": 66,
+    "end_line": 77,
+    "has_docstring": true,
+    "docstring": "Ask a question and return the answer",
+    "parameters": [
+      "question"
+    ],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function ask_question",
+    "component_id": "services.rag_service.ask_question"
+  },
+  "services.vector_store.create_vector_store": {
+    "id": "services.vector_store.create_vector_store",
+    "name": "create_vector_store",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/vector_store.py",
+    "relative_path": "services/vector_store.py",
+    "depends_on": [
+      "utils.document_loader.split_documents",
+      "utils.document_loader.load_documents"
+    ],
+    "source_code": "def create_vector_store(documents_path: str):\n    \"\"\"\n    Create a new vector from documents\n    \"\"\"\n    try:\n        # Create Embedding objet\n        embeddings = OllamaEmbeddings(\n            model=EMBEDDING_MODEL,\n            base_url=OLLAMA_BASE_URL\n        )\n\n        # Load documents\n        loaded_documents = load_documents(directory_path=documents_path)\n        splited_documents = split_documents(documents=loaded_documents)\n\n        # Create vectore store\n        vector_store = Chroma.from_documents(\n            collection_name=\"documents\",\n            embedding=embeddings,\n            documents=splited_documents,\n            persist_directory=str(CHROMADB_PATH)\n        )\n    except Exception as e:\n        print(f\"Error during vector store creating: {e}\")",
+    "start_line": 6,
+    "end_line": 29,
+    "has_docstring": true,
+    "docstring": "Create a new vector from documents",
+    "parameters": [
+      "documents_path"
+    ],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function create_vector_store",
+    "component_id": "services.vector_store.create_vector_store"
+  },
+  "services.vector_store.load_vector_store": {
+    "id": "services.vector_store.load_vector_store",
+    "name": "load_vector_store",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/vector_store.py",
+    "relative_path": "services/vector_store.py",
+    "depends_on": [],
+    "source_code": "def load_vector_store():\n    \"\"\"\n    Load existing vector store\n    \"\"\"\n    try:\n\n        # Create Embedding objet\n        embeddings = OllamaEmbeddings(\n            model=EMBEDDING_MODEL,\n            base_url=OLLAMA_BASE_URL\n        )\n\n        # Create vectore store\n        vector_store = Chroma(\n            collection_name=\"documents\",\n            embedding_function=embeddings,\n            persist_directory=str(CHROMADB_PATH)\n        )\n        return vector_store\n    except Exception as e:\n        print(f\"Error during vector store loading: {e}\")\n        return None",
+    "start_line": 31,
+    "end_line": 52,
+    "has_docstring": true,
+    "docstring": "Load existing vector store",
+    "parameters": [],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function load_vector_store",
+    "component_id": "services.vector_store.load_vector_store"
+  },
+  "services.vector_store.get_retriever": {
+    "id": "services.vector_store.get_retriever",
+    "name": "get_retriever",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/vector_store.py",
+    "relative_path": "services/vector_store.py",
+    "depends_on": [
+      "services.vector_store.load_vector_store"
+    ],
+    "source_code": "def get_retriever(k=5):\n    \"\"\"\n    Return a retriever to search the most k pertinents documents\n    \"\"\"\n    try:\n        vector_store = load_vector_store()\n        retriever = vector_store.as_retriever(search_kwargs={\"k\": k})\n        return retriever\n    except Exception as e:\n        print(f\"Error during retriever creation: {e}\")\n        return None",
+    "start_line": 54,
+    "end_line": 64,
+    "has_docstring": true,
+    "docstring": "Return a retriever to search the most k pertinents documents",
+    "parameters": [
+      "k"
+    ],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function get_retriever",
+    "component_id": "services.vector_store.get_retriever"
+  },
+  "utils.document_loader.load_documents": {
+    "id": "utils.document_loader.load_documents",
+    "name": "load_documents",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/utils/document_loader.py",
+    "relative_path": "utils/document_loader.py",
+    "depends_on": [],
+    "source_code": "def load_documents(directory_path: str):\n    \"\"\"\n    Load all the documents on a directory\n    return a list of langChain documents\n    \"\"\"\n    documents = []\n    try :\n        documents = DirectoryLoader(\n            path=directory_path,\n            glob=\"**/*.pdf\",\n            loader_cls=PyPDFLoader\n            ).load()\n        return documents\n    except Exception as e:\n        print(f\"Error during documents loading: {e}\")\n        return []",
+    "start_line": 5,
+    "end_line": 20,
+    "has_docstring": true,
+    "docstring": "Load all the documents on a directory\nreturn a list of langChain documents",
+    "parameters": [
+      "directory_path"
+    ],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function load_documents",
+    "component_id": "utils.document_loader.load_documents"
+  },
+  "utils.document_loader.split_documents": {
+    "id": "utils.document_loader.split_documents",
+    "name": "split_documents",
+    "component_type": "function",
+    "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/utils/document_loader.py",
+    "relative_path": "utils/document_loader.py",
+    "depends_on": [
+      "utils.document_loader.split_documents"
+    ],
+    "source_code": "def split_documents(documents, chunk_size=1000, chunk_overlap=200):\n    \"\"\"\n    Split documents into chunk\n    Return a list of chunks\n    \"\"\"\n    try:\n        text_splitter = RecursiveCharacterTextSplitter(\n            chunk_size=chunk_size,\n            chunk_overlap=chunk_overlap,\n            length_function=len,\n            is_separator_regex=False,\n        )\n\n        texts = text_splitter.split_documents(documents)\n        \n        return texts\n    except Exception as e:\n        print(f\"Error during document split: {e}\")\n        return []",
+    "start_line": 22,
+    "end_line": 40,
+    "has_docstring": true,
+    "docstring": "Split documents into chunk\nReturn a list of chunks",
+    "parameters": [
+      "documents",
+      "chunk_size",
+      "chunk_overlap"
+    ],
+    "node_type": "function",
+    "base_classes": null,
+    "class_name": null,
+    "display_name": "function split_documents",
+    "component_id": "utils.document_loader.split_documents"
+  }
+}
