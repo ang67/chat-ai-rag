@@ -106,8 +106,8 @@
     "relative_path": "services/rag_service.py",
     "depends_on": [
       "services.vector_store.get_retriever",
-      "services.rag_service.get_prompt_template",
-      "services.rag_service.get_llm"
+      "services.rag_service.get_llm",
+      "services.rag_service.get_prompt_template"
     ],
     "source_code": "def get_rag_chain():\n    \"\"\"Return the completed RAG chain\"\"\"\n    try:\n        retriever = get_retriever()\n        prompt = get_prompt_template()\n        llm = get_llm()\n\n        chain = (\n            {\"context\": retriever | format_docs, \"question\": RunnablePassthrough()}\n            | prompt\n            | llm\n            | StrOutputParser()\n        )\n        return chain\n    except Exception as e:\n        print(f\"Error getting rag chain : {e}\")\n        return None",
     "start_line": 47,
@@ -151,8 +151,8 @@
     "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/vector_store.py",
     "relative_path": "services/vector_store.py",
     "depends_on": [
-      "utils.document_loader.split_documents",
-      "utils.document_loader.load_documents"
+      "utils.document_loader.load_documents",
+      "utils.document_loader.split_documents"
     ],
     "source_code": "def create_vector_store(documents_path: str):\n    \"\"\"\n    Create a new vector from documents\n    \"\"\"\n    try:\n        # Create Embedding objet\n        embeddings = OllamaEmbeddings(\n            model=EMBEDDING_MODEL,\n            base_url=OLLAMA_BASE_URL\n        )\n\n        # Load documents\n        loaded_documents = load_documents(directory_path=documents_path)\n        splited_documents = split_documents(documents=loaded_documents)\n\n        # Create vectore store\n        vector_store = Chroma.from_documents(\n            collection_name=\"documents\",\n            embedding=embeddings,\n            documents=splited_documents,\n            persist_directory=str(CHROMADB_PATH)\n        )\n    except Exception as e:\n        print(f\"Error during vector store creating: {e}\")",
     "start_line": 6,
