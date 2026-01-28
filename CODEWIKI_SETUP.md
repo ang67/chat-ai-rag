@@ -191,7 +191,40 @@ cat /Users/biniangui/Informatique/CodeWiki/backend/docs/metadata.json
 
 ## ⚠️ CRITICAL LIMITATION: Ollama Models Cannot Generate Documentation
 
-### The Problem
+### ✅ UPDATE: QWEN2.5:14B RÉUSSIT!
+
+**Bonne nouvelle:** Après tests approfondis, **qwen2.5:14b fonctionne** pour générer la documentation complète!
+
+**Modèles testés:**
+- ❌ `ollama/llama3` - Échec validation output
+- ❌ `ollama/gpt-oss` - Échec validation output  
+- ✅ **`ollama/qwen2.5:14b`** - **SUCCÈS COMPLET!**
+
+**Commandes pour installer et utiliser qwen2.5:**
+```bash
+# 1. Pull le modèle
+ollama pull qwen2.5:14b
+
+# 2. Ajouter à LiteLLM (si nécessaire)
+# Dans votre config LiteLLM, ajouter:
+# - model_name: qwen2.5
+#   litellm_params:
+#     model: ollama/qwen2.5:14b
+#     api_base: http://localhost:11434
+
+# 3. Configurer CodeWiki
+codewiki config set \
+  --main-model ollama/qwen2.5:14b \
+  --cluster-model ollama/qwen2.5:14b \
+  --fallback-model ollama/llama3
+
+# 4. Générer (UTILISER PARAMÈTRES PAR DÉFAUT!)
+codewiki generate
+```
+
+**IMPORTANT:** N'utilisez PAS `--max-depth` ou autres paramètres personnalisés. Les paramètres par défaut fonctionnent mieux avec qwen2.5:14b.
+
+### The Problem (RÉSOLU avec qwen2.5:14b)
 
 After extensive testing, we've confirmed that **local Ollama models CANNOT reliably generate CodeWiki documentation**, even through LiteLLM proxy. Here's why:
 
@@ -310,15 +343,45 @@ backend/docs/
 **Ollama:** Running locally on port 11434
 ### Current Status
 
-✓ **Infrastructure Working:**
-- Ollama server running
-- LiteLLM proxy operational on port 4000
-- CodeWiki configuration valid
-- Dependency analysis functional (12 components)
+✅ **SOLUTION TROUVÉE: QWEN2.5:14B FONCTIONNE!**
 
-✗ **Documentation Generation:**
-- **FAILS** with Ollama models due to structured output limitations
-- Generates empty `module_tree.json`
-- 0 modules documented
+**Date:** 28 janvier 2026
 
-**Conclusion:** For actual documentation generation, you need OpenAI or Anthropic API access. The current setup with local Ollama models can only analyze code structure, not generate comprehensive documentation.
+**Configuration finale qui fonctionne:**
+```bash
+codewiki config set \
+  --main-model ollama/qwen2.5:14b \
+  --cluster-model ollama/qwen2.5:14b \
+  --fallback-model ollama/llama3
+
+# Générer avec paramètres par défaut (IMPORTANT!)
+codewiki generate
+```
+
+**Résultats:**
+✅ Documentation complète générée en 13 minutes
+✅ 6 fichiers de documentation détaillée (2-3.5 KB chacun):
+  - `overview.md`
+  - `routes_chat.md`
+  - `services_rag_service.md`
+  - `services_vector_store.md`
+  - `utils_document_loader.md`
+  - `app_home.md`
+✅ Diagrammes Mermaid inclus
+✅ Documentation des dépendances
+✅ Liens entre modules
+
+**Points clés du succès:**
+1. **Modèle:** `qwen2.5:14b` (meilleur pour JSON structuré)
+2. **Paramètres:** Utiliser les paramètres **par défaut** (pas de `--max-depth`)
+3. **LiteLLM:** Ajouter qwen2.5 à la liste des modèles autorisés
+4. **Patience:** ~13 minutes de génération pour 12 composants
+
+**Infrastructure:**
+✓ Ollama server running (port 11434)
+✓ LiteLLM proxy operational (port 4000)
+✓ CodeWiki configuration valid
+✓ Dependency analysis functional (12 components)
+✓ **Documentation generation: FUNCTIONAL avec qwen2.5:14b**
+
+**Conclusion:** CodeWiki fonctionne maintenant avec des modèles locaux Ollama en utilisant **qwen2.5:14b**. Pas besoin d'API cloud pour une documentation de qualité!

@@ -1,6 +1,6 @@
 {
     "generation_info": {
-        "timestamp": "2026-01-28T01:08:27.599308",
+        "timestamp": "2026-01-28T01:25:32.524149",
         "main_model": "ollama/qwen2.5:14b",
         "generator_version": "1.0.1",
         "repo_path": "/Users/biniangui/Informatique/CodeWiki/backend",
@@ -9,11 +9,16 @@
     "statistics": {
         "total_components": 12,
         "leaf_nodes": 12,
-        "max_depth": 3
+        "max_depth": 2
     },
     "files_generated": [
         "overview.md",
         "module_tree.json",
-        "first_module_tree.json"
+        "first_module_tree.json",
+        "routes_chat.md",
+        "services_rag_service.md",
+        "utils_document_loader.md",
+        "app_home.md",
+        "services_vector_store.md"
     ]
 }
