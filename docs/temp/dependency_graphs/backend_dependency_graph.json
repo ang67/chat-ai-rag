@@ -105,9 +105,9 @@
     "file_path": "/Users/biniangui/Informatique/CodeWiki/backend/services/rag_service.py",
     "relative_path": "services/rag_service.py",
     "depends_on": [
-      "services.rag_service.get_llm",
       "services.vector_store.get_retriever",
-      "services.rag_service.get_prompt_template"
+      "services.rag_service.get_prompt_template",
+      "services.rag_service.get_llm"
     ],
     "source_code": "def get_rag_chain():\n    \"\"\"Return the completed RAG chain\"\"\"\n    try:\n        retriever = get_retriever()\n        prompt = get_prompt_template()\n        llm = get_llm()\n\n        chain = (\n            {\"context\": retriever | format_docs, \"question\": RunnablePassthrough()}\n            | prompt\n            | llm\n            | StrOutputParser()\n        )\n        return chain\n    except Exception as e:\n        print(f\"Error getting rag chain : {e}\")\n        return None",
     "start_line": 47,

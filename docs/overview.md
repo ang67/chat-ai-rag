@@ -1,54 +1,28 @@
 # Backend Module Documentation
 
-## Overview
-The backend module is the core of our system, providing the necessary services for handling chat interactions and managing vector stores. It includes several sub-modules that collectively facilitate question-answering capabilities based on retrieved documents.
+## Introduction
+The backend module is responsible for providing a robust and scalable framework to handle question answering tasks based on document retrieval. It integrates various services such as vector store management, chat routing, and RAG (Retrieval-Augmented Generation) service.
 
 ## Architecture Overview
-The architecture of the backend module consists of:
-1. **Routes**: Handles incoming HTTP requests and routes them to appropriate endpoints.
-2. **App Initialization**: Configures Flask application, sets up CORS policy, and registers blueprints.
-3. **RAG Service**: Provides functionality for creating language models, managing prompt templates, and handling document retrieval.
-4. **Vector Store Management**: Manages the creation, loading, and querying of vector stores used for storing and retrieving documents.
-5. **Document Loader**: Loads and splits documents into manageable chunks for further processing.
+The architecture of the backend module is composed of several sub-modules that interact with each other to provide a seamless experience for users. The following diagram provides an overview of the main components:
 
-Here is a high-level overview diagram showing how these components interact:
 ```mermaid
-diagram
-graph TB
-    subgraph App Initialization
-        app_home["app.home"]
-    end
-    subgraph Routes
-        routes_chat["routes.chat.ask"]
-    end
-    subgraph RAG Service
-        rag_chain_services["services.rag_service.get_rag_chain"]
-        prompt_template_services["services.rag_service.get_prompt_template"]
-        llm_services["services.rag_service.get_llm"]
-        ask_question_services["services.rag_service.ask_question"]
-    end
-    subgraph Vector Store Management
-        create_vector_store["services.vector_store.create_vector_store"]
-        load_vector_store["services.vector_store.load_vector_store"]
-        get_retriever["services.vector_store.get_retriever"]
-    end
-    subgraph Document Loader
-        document_loader["utils.document_loader.load_documents"]
-        split_documents["utils.document_loader.split_documents"]
-    end
-
-    routes_chat -->|Send Question to Service| rag_chain_services
-    app_home --> routes_chat
-    prompt_template_services --> llm_services
-    llm_services --> ask_question_services
-    create_vector_store --> load_vector_store
-    load_vector_store --> get_retriever
-    document_loader --> split_documents
-    split_documents -->|Context for RAG Chain| rag_chain_services
+graph LR;
+    A[app.py] --> B(routes/chat.py);
+    B --> C(services/rag_service.py);
+    C --> D(utils/document_loader.py);
+    C --> E(services/vector_store.py);
 ```
-## Sub-Modules
-1. **Routes**: [routes_chat.md](./routes_chat.md)
-2. **App Initialization**: [app_home.md](./app_home.md)
-3. **RAG Service**: [services_rag_service.md](./services_rag_service.md)
-4. **Vector Store Management**: [services_vector_store.md](./services_vector_store.md)
-5. **Document Loader**: [utils_document_loader.md](./utils_document_loader.md)
+
+1. **app.py**: Entry point of the application that initializes and runs the Flask server.
+2. **routes/chat.py**: Handles chat-related routes such as `/ask` which processes incoming questions and returns answers from the RAG service.
+3. **services/rag_service.py**: Core logic for the retrieval-augmented generation (RAG) system, including question handling, document retrieval, and language model integration.
+4. **utils/document_loader.py**: Provides utilities to load and split documents into chunks suitable for vector store indexing.
+5. **services/vector_store.py**: Manages the creation, loading, and querying of a vector-based document store using LangChain Chroma backend.
+
+## Sub-modules
+Detailed documentation on individual sub-modules can be found below:
+- [Vector Store](vector_store.md)
+- [Chat Routes](chat_routes.md)
+- [RAG Service](rag_service.md)
+- [Document Loader Utilities](document_loader_utilities.md)

@@ -1,38 +1,32 @@
 {
-    "routes_chat": {
+    "vector_store": {
+        "components": [
+            "services.vector_store.get_retriever",
+            "services.vector_store.create_vector_store",
+            "services.vector_store.load_vector_store"
+        ],
+        "children": {}
+    },
+    "chat_routes": {
         "components": [
             "routes.chat.ask"
         ],
         "children": {}
     },
-    "app_home": {
-        "components": [
-            "app.home"
-        ],
-        "children": {}
-    },
-    "services_rag_service": {
+    "rag_service": {
         "components": [
             "services.rag_service.get_prompt_template",
+            "services.rag_service.ask_question",
             "services.rag_service.get_rag_chain",
             "services.rag_service.get_llm",
-            "services.rag_service.ask_question",
             "services.rag_service.format_docs"
         ],
         "children": {}
     },
-    "services_vector_store": {
+    "document_loader_utilities": {
         "components": [
-            "services.vector_store.create_vector_store",
-            "services.vector_store.load_vector_store",
-            "services.vector_store.get_retriever"
-        ],
-        "children": {}
-    },
-    "utils_document_loader": {
-        "components": [
-            "utils.document_loader.load_documents",
-            "utils.document_loader.split_documents"
+            "utils.document_loader.split_documents",
+            "utils.document_loader.load_documents"
         ],
         "children": {}
     }
